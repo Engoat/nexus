@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nexus — logo</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#fdfdfb;--ink:#1b3a6b;--soft:#57574f;--line:#d9d5c6;--red:#c62b22}
+*{box-sizing:border-box}
+body{margin:0;background:#f8f7f1;color:#1d2321;font:400 15px/1.5 "Space Grotesk",sans-serif}
+main{max-width:1320px;margin:0 auto;padding:36px 16px 48px;display:grid;gap:16px;grid-template-columns:1.3fr 1fr}
+.tile{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:28px;display:grid;place-items:center;position:relative;min-height:260px}
+.tile.dark{background:#121826;border-color:#121826}
+.label{position:absolute;left:18px;top:14px;font:600 11px/1 "IBM Plex Mono",monospace;letter-spacing:.12em;color:var(--soft)}
+.dark .label{color:#7f8aa6}
+.wide{grid-column:1/-1}
+.lock{display:flex;align-items:center;gap:26px}
+.name{font:700 76px/1 "Space Grotesk";letter-spacing:.02em;color:var(--ink)}
+.sizes{display:flex;align-items:flex-end;gap:34px}
+.sizes figure{margin:0;display:grid;justify-items:center;gap:10px;font:500 11px "IBM Plex Mono",monospace;color:var(--soft)}
+.browser{width:100%;max-width:560px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.tabs{background:#ecebe3;padding:8px 10px 0;display:flex;gap:6px}
+.tab{display:flex;align-items:center;gap:8px;background:#fff;border-radius:8px 8px 0 0;padding:8px 14px;font:500 13px system-ui,sans-serif;color:#2c3431}
+.tab.off{background:transparent;color:#7a817d}
+.urlbar{padding:9px 14px;border-bottom:1px solid var(--line);font:400 12px "IBM Plex Mono",monospace;color:#7a817d}
+.app{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:2px solid #a6b7e5;background:#f0eee5}
+.app .t{font:700 20px "Space Grotesk";color:var(--ink);letter-spacing:.02em}
+.app nav{display:flex;gap:16px;margin-left:auto;font:500 13px "Space Grotesk";color:#57574f}
+.page{height:150px;background:#fdfdfb;background-image:repeating-linear-gradient(0deg,transparent 0 23px,#d4ddf3 23px 24px);position:relative}
+.cover{width:100%;max-width:820px;display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;background:#fdfdfb;
+  background-image:repeating-linear-gradient(0deg,transparent 0 31px,#d4ddf3 31px 32px);border:1px solid var(--line);padding:30px 34px;position:relative}
+.cover::before{content:"";position:absolute;left:18px;top:0;bottom:0;width:2px;background:rgba(198,43,34,.6)}
+.cover h3{margin:0 0 6px;font:700 44px/1 "Space Grotesk";color:var(--ink);letter-spacing:.02em}
+.cover p{margin:0;color:var(--soft)}
+</style>
+</head>
+<body>
+<main id="m"></main>
+<script>
+const K = { ink: "#1b3a6b", red: "#c62b22", paper: "#fdfdfb", water: "#d4ddf3" };
+const L = { ink: "#e8edf7", red: "#ff6a5c", paper: "#121826", water: "#22304f" };
+let uid = 0;
+function konigsberg(c) {
+  const id = "k" + (uid++);
+  const N = [50, 16], S = [50, 84], I = [40, 50], Ee = [80, 50];
+  const bow = (p, q, k) => {
+    const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, dx = q[0] - p[0], dy = q[1] - p[1];
+    return `<path d="M${p} Q${mx - dy * k},${my + dx * k} ${q}" fill="none" stroke="${c.ink}" stroke-width="3.6" stroke-linecap="round"/>`;
+  };
+  return `<defs><clipPath id="${id}"><circle cx="50" cy="50" r="45"/></clipPath></defs>
+    <g clip-path="url(#${id})">
+      <rect width="100" height="100" fill="${c.paper}"/>
+      <path d="M-5,35 C15,33 40,33 58,37 C68,33 80,24 105,17 L105,31 C84,37 72,44 66,48 L66,52 C72,56 84,63 105,69 L105,83 C80,76 68,67 58,63 C40,67 15,67 -5,65 Z" fill="${c.water}"/>
+      <ellipse cx="40" cy="50" rx="17" ry="9" fill="${c.paper}"/>
+      ${bow(N, I, 0.18)}${bow(N, I, -0.18)}${bow(S, I, 0.18)}${bow(S, I, -0.18)}${bow(I, Ee, 0)}${bow(N, Ee, -0.12)}${bow(S, Ee, 0.12)}
+    </g>
+    <circle cx="50" cy="50" r="45" fill="none" stroke="${c.ink}" stroke-width="3"/>
+    ${[N, S, Ee].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6.5" fill="${c.paper}" stroke="${c.ink}" stroke-width="3.2"/>`).join("")}
+    <circle cx="${I[0]}" cy="${I[1]}" r="7.5" fill="${c.red}"/>`;
+}
+const mark = (s, c = K) => `<svg viewBox="0 0 100 100" width="${s}" height="${s}" aria-hidden="true">${konigsberg(c)}</svg>`;
+
+document.fonts.load('700 40px "Space Grotesk"').then(() => document.fonts.ready).then(() => {
+  document.getElementById("m").innerHTML = `
+    <section class="tile"><span class="label">LOGO PRINCIPAL</span><div class="lock">${mark(170)}<span class="name">NEXUS</span></div></section>
+    <section class="tile dark"><span class="label">SUR FOND SOMBRE</span><div class="lock">${mark(120, L)}<span class="name" style="color:#e8edf7;font-size:54px">NEXUS</span></div></section>
+    <section class="tile"><span class="label">ICÔNE · DE 128 À 16 PX</span>
+      <div class="sizes">
+        <figure>${mark(128)}128</figure><figure>${mark(64)}64</figure><figure>${mark(32)}32</figure><figure>${mark(16)}16</figure><figure>${mark(64, L)}sombre</figure>
+      </div></section>
+    <section class="tile"><span class="label">DANS LE NAVIGATEUR</span>
+      <div class="browser">
+        <div class="tabs"><div class="tab">${mark(16)} Nexus — parcours en largeur</div><div class="tab off">Nouvel onglet</div></div>
+        <div class="urlbar">nexus.app</div>
+        <div class="app">${mark(28)}<span class="t">NEXUS</span><nav><span>Graphes</span><span>Files d'attente</span><span>Cours</span></nav></div>
+        <div class="page"></div>
+      </div></section>
+    <section class="tile wide"><span class="label">EN COUVERTURE, SUR LE PAPIER DE L'APPLICATION</span>
+      <div class="cover">${mark(120)}<div><h3>NEXUS</h3><p>Atelier d'algorithmes de graphes et de files d'attente.</p></div></div></section>`;
+  window.__ready = true;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nexus — logos</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#fdfdfb;--ink:#1b3a6b;--soft:#57574f;--line:#d9d5c6;--red:#c62b22}
+*{box-sizing:border-box}
+body{margin:0;background:#f8f7f1;color:#1d2321;font:400 15px/1.55 "Space Grotesk",system-ui,sans-serif}
+main{max-width:1120px;margin:0 auto;padding:44px 16px 72px}
+h1{font:700 34px/1.1 "Space Grotesk",sans-serif;margin:0 0 8px;letter-spacing:-.02em;color:var(--ink)}
+.lead{color:var(--soft);margin:0 0 36px;max-width:72ch}
+.piste{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);background:var(--paper);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden;margin-bottom:18px}
+.stage{display:grid;place-items:center;min-height:300px;padding:28px;border-right:1px solid var(--line)}
+.info{padding:26px 26px 22px;display:flex;flex-direction:column;gap:14px}
+.num{font:600 12px/1 "IBM Plex Mono",monospace;letter-spacing:.12em;color:var(--red)}
+.info h2{font:700 24px/1.15 "Space Grotesk",sans-serif;margin:0;color:var(--ink)}
+.info p{margin:0;color:var(--soft)}
+.uses{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:auto}
+.tab{display:flex;align-items:center;gap:8px;background:#ecebe3;border-radius:8px 8px 0 0;padding:7px 12px;font:500 13px "IBM Plex Mono",monospace;color:#3b4340}
+.dark{background:#121826;border-radius:10px;padding:14px 18px;display:grid;place-items:center}
+@media (max-width:760px){.piste{grid-template-columns:1fr}.stage{border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Nexus — logos, deuxième série</h1>
+  <p class="lead">Chaque piste vient de la théorie des graphes elle-même, dans l'encre et les couleurs de trace de l'application (bleu : découvert, rouge : en cours, vert : terminé, violet : arbre). Pour chaque piste : le logo, son usage en icône d'onglet, et sa version sur fond sombre.</p>
+  <div id="list"></div>
+</main>
+<script>
+const K = { ink: "#1b3a6b", red: "#c62b22", blue: "#2a51a3", green: "#19683d", violet: "#653a9b", paper: "#fdfdfb", seyes: "#a6b7e5", seyes2: "#d4ddf3" };
+const L = { ink: "#e8edf7", red: "#ff6a5c", blue: "#7ea0ff", green: "#4fc27f", violet: "#b48cff", paper: "#121826", seyes: "#3a4a74", seyes2: "#253152" };
+
+/* ---------- 1. le X est un carrefour ---------- */
+// dans NEXUS, le X est littéralement un nexus : deux arêtes qui se croisent,
+// un sommet à chaque extrémité, le sommet en cours au croisement
+function xGlyph(c, size) {
+  const h = size * 0.72, w = size * 0.6, sw = size * 0.12, r = sw * 0.78;
+  const P = [[0, -h], [w, -h], [0, 0], [w, 0]];
+  return `<g>
+    <line x1="${P[0][0]}" y1="${P[0][1]}" x2="${P[3][0]}" y2="${P[3][1]}" stroke="${c.ink}" stroke-width="${sw}" stroke-linecap="round"/>
+    <line x1="${P[1][0]}" y1="${P[1][1]}" x2="${P[2][0]}" y2="${P[2][1]}" stroke="${c.ink}" stroke-width="${sw}" stroke-linecap="round"/>
+    ${P.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c.paper}" stroke="${c.ink}" stroke-width="${sw * 0.55}"/>`).join("")}
+    <circle cx="${w / 2}" cy="${-h / 2}" r="${r * 1.25}" fill="${c.red}"/>
+  </g>`;
+}
+function wordX(c, size) {
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.font = `700 ${size}px "Space Grotesk"`;
+  const ls = size * 0.02;
+  const a = ctx.measureText("NE").width + ls * 2, b = ctx.measureText("US").width + ls * 2;
+  const xw = size * 0.6, gap = size * 0.09, base = size * 0.95;
+  const W = a + gap + xw + gap + b, H = size * 1.1;
+  return { w: W, h: H, svg: `
+    <text x="0" y="${base}" font-family="Space Grotesk" font-weight="700" font-size="${size}" letter-spacing="${ls}" fill="${c.ink}">NE</text>
+    <g transform="translate(${a + gap} ${base})">${xGlyph(c, size)}</g>
+    <text x="${a + gap + xw + gap}" y="${base}" font-family="Space Grotesk" font-weight="700" font-size="${size}" letter-spacing="${ls}" fill="${c.ink}">US</text>` };
+}
+
+/* ---------- 2. la maison sans lever le crayon ---------- */
+// le jeu que tout écolier connaît est un problème de graphes : un chemin
+// eulérien. Il part d'un sommet impair (vert) et finit sur l'autre (rouge)
+function maison(c) {
+  const A = [18, 86], B = [82, 86], C = [82, 44], D = [18, 44], E = [50, 13];
+  const path = [A, B, C, E, D, C, A, D, B];
+  const d = "M" + path.map(p => p.join(",")).join(" L");
+  const arrow = (p, q, t) => {
+    const x = p[0] + (q[0] - p[0]) * t, y = p[1] + (q[1] - p[1]) * t;
+    const ang = Math.atan2(q[1] - p[1], q[0] - p[0]) * 180 / Math.PI;
+    return `<path d="M-4,-4 L3,0 L-4,4" fill="none" stroke="${c.paper}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(${x} ${y}) rotate(${ang})"/>`;
+  };
+  return `<path d="${d}" fill="none" stroke="${c.ink}" stroke-width="7.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${[C, D, E].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7" fill="${c.paper}" stroke="${c.ink}" stroke-width="4"/>`).join("")}
+    <circle cx="${A[0]}" cy="${A[1]}" r="8.5" fill="${c.green}"/>
+    <circle cx="${B[0]}" cy="${B[1]}" r="8.5" fill="${c.red}"/>`;
+}
+
+/* ---------- 3. les sept ponts de Königsberg ---------- */
+// le problème qu'Euler a résolu en 1736, et qui a fondé la théorie des
+// graphes : quatre terres, sept ponts, et le graphe tracé par-dessus
+function konigsberg(c, id) {
+  const water = c === K ? "#d4ddf3" : "#22304f";
+  const N = [50, 16], S = [50, 84], I = [40, 50], Ee = [80, 50];
+  const bow = (p, q, k) => {
+    const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, dx = q[0] - p[0], dy = q[1] - p[1];
+    return `<path d="M${p} Q${mx - dy * k},${my + dx * k} ${q}" fill="none" stroke="${c.ink}" stroke-width="3.6" stroke-linecap="round"/>`;
+  };
+  return `<defs><clipPath id="${id}"><circle cx="50" cy="50" r="45"/></clipPath></defs>
+    <g clip-path="url(#${id})">
+      <rect width="100" height="100" fill="${c.paper}"/>
+      <path d="M-5,35 C15,33 40,33 58,37 C68,33 80,24 105,17 L105,31 C84,37 72,44 66,48 L66,52 C72,56 84,63 105,69 L105,83 C80,76 68,67 58,63 C40,67 15,67 -5,65 Z" fill="${water}"/>
+      <ellipse cx="40" cy="50" rx="17" ry="9" fill="${c.paper}"/>
+      ${bow(N, I, 0.18)}${bow(N, I, -0.18)}${bow(S, I, 0.18)}${bow(S, I, -0.18)}${bow(I, Ee, 0)}${bow(N, Ee, -0.12)}${bow(S, Ee, 0.12)}
+    </g>
+    <circle cx="50" cy="50" r="45" fill="none" stroke="${c.ink}" stroke-width="3"/>
+    ${[N, S, Ee].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6.5" fill="${c.paper}" stroke="${c.ink}" stroke-width="3.2"/>`).join("")}
+    <circle cx="${I[0]}" cy="${I[1]}" r="7.5" fill="${c.red}"/>`;
+}
+
+/* ---------- 4. l'onde du parcours en largeur ---------- */
+// un parcours en largeur avance par couches : le départ est terminé (vert),
+// la première couche est découverte (bleu), un sommet est en cours (rouge)
+function onde(c) {
+  const O = [50, 50];
+  const ring1 = [0, 1, 2, 3].map(i => { const a = -Math.PI / 2 + i * Math.PI / 2 + 0.35; return [50 + Math.cos(a) * 23, 50 + Math.sin(a) * 23]; });
+  const ring2 = [0, 1, 2, 3, 4, 5, 6, 7].map(i => { const a = -Math.PI / 2 + i * Math.PI / 4 + 0.15; return [50 + Math.cos(a) * 41, 50 + Math.sin(a) * 41]; });
+  let s = `<circle cx="50" cy="50" r="23" fill="none" stroke="${c.seyes}" stroke-width="1.4" stroke-dasharray="2.5 3"/>
+    <circle cx="50" cy="50" r="41" fill="none" stroke="${c.seyes}" stroke-width="1.4" stroke-dasharray="2.5 3"/>`;
+  ring1.forEach(p => { s += `<line x1="50" y1="50" x2="${p[0]}" y2="${p[1]}" stroke="${c.violet}" stroke-width="4.5" stroke-linecap="round"/>`; });
+  ring2.forEach((p, i) => { const q = ring1[Math.floor(i / 2)]; s += `<line x1="${q[0]}" y1="${q[1]}" x2="${p[0]}" y2="${p[1]}" stroke="${c.ink}" stroke-width="2.4" stroke-linecap="round" opacity="${i < 2 ? 1 : 0.45}"/>`; });
+  ring2.forEach((p, i) => { s += `<circle cx="${p[0]}" cy="${p[1]}" r="4.6" fill="${i < 2 ? c.blue : c.paper}" stroke="${i < 2 ? c.blue : c.ink}" stroke-width="2"/>`; });
+  ring1.forEach((p, i) => { s += `<circle cx="${p[0]}" cy="${p[1]}" r="6.4" fill="${i === 0 ? c.red : c.blue}"/>`; });
+  s += `<circle cx="50" cy="50" r="8.5" fill="${c.green}"/>`;
+  return s;
+}
+
+/* ---------- 5. le N à la plume, sur la page ---------- */
+// un carré de cahier à grands carreaux, et le N tracé à l'encre comme un
+// chemin : quatre sommets, trois arêtes, le trait épaissi par la plume
+function plume(c, id) {
+  let lines = "";
+  for (let y = 12; y < 100; y += 8) lines += `<line x1="0" y1="${y}" x2="100" y2="${y}" stroke="${(y - 12) % 32 === 0 ? c.seyes : c.seyes2}" stroke-width="${(y - 12) % 32 === 0 ? 1.5 : 1}"/>`;
+  const P = [[30, 76], [30, 28], [70, 76], [70, 28]];
+  // trait de plume : plein dans les descentes, délié dans les montées
+  const stroke = (p, q, w) => `<path d="M${p} L${q}" stroke="${c.ink}" stroke-width="${w}" stroke-linecap="round"/>`;
+  return `<defs><clipPath id="${id}"><rect x="4" y="4" width="92" height="92" rx="12"/></clipPath></defs>
+    <rect x="4" y="4" width="92" height="92" rx="12" fill="#fdfdfb" stroke="${c === K ? "#d9d5c6" : "none"}" stroke-width="1.5"/>
+    <g clip-path="url(#${id})">${lines}<line x1="16" y1="0" x2="16" y2="100" stroke="${K.red}" stroke-width="1.6" opacity=".75"/></g>
+    ${stroke(P[0], P[1], 4)}${stroke(P[1], P[2], 9)}${stroke(P[2], P[3], 4)}
+    ${[P[0], P[1], P[3]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6" fill="#fdfdfb" stroke="${K.ink}" stroke-width="3"/>`).join("")}
+    <circle cx="${P[2][0]}" cy="${P[2][1]}" r="7" fill="${K.red}"/>`;
+}
+
+const PISTES = [
+  { name: "Le X carrefour", word: true,
+    why: "Dans NEXUS, le X est littéralement un nexus : deux arêtes qui se croisent, un sommet à chaque extrémité, et le sommet en cours de traitement, en rouge, au croisement. Le reste du nom reste sobre pour que le X porte toute l'idée. En icône, le X seul." },
+  { name: "La maison sans lever le crayon", fn: maison,
+    why: "Le jeu que tout écolier connaît est un problème de graphes : un chemin eulérien, qui passe une fois par chaque arête. Il part d'un sommet de degré impair (vert) et finit sur l'autre (rouge). Nexus, c'est apprendre ce qu'il y a derrière ce jeu." },
+  { name: "Les sept ponts", fn: konigsberg,
+    why: "Königsberg, 1736 : quatre terres, sept ponts, et Euler montre qu'on ne peut pas tous les traverser une seule fois. C'est la naissance de la théorie des graphes. La carte et le graphe sont superposés, l'île centrale en rouge." },
+  { name: "L'onde", fn: onde,
+    why: "Un parcours en largeur avance par couches, comme une onde : le départ est terminé (vert), la première couche est découverte (bleu), un sommet est en cours (rouge), la couche suivante attend. C'est l'algorithme qu'on lance en premier dans Nexus." },
+  { name: "Le N à la plume", fn: plume,
+    why: "Un carré de cahier à grands carreaux, avec sa marge rouge, et le N tracé à l'encre comme un chemin. Le trait s'épaissit dans la descente, comme sous une plume. C'est le papier de l'application, signé." },
+];
+
+let id = 0;
+const svg = (inner, w, h, vw = 100, vh = 100) => `<svg viewBox="0 0 ${vw} ${vh}" width="${w}" height="${h}" aria-hidden="true">${inner}</svg>`;
+const name = (c, fs) => `<span style="font:700 ${fs}px/1 'Space Grotesk';color:${c.ink};letter-spacing:.02em">NEXUS</span>`;
+function render() {
+  document.getElementById("list").innerHTML = PISTES.map((p, i) => {
+    let hero, tab, dark;
+    if (p.word) {
+      const w = wordX(K, 110), wd = wordX(L, 110);
+      hero = svg(w.svg, 380, 380 * w.h / w.w, w.w, w.h);
+      const icon = (c, s) => svg(`<g transform="translate(20 86)">${xGlyph(c, 100)}</g>`, s, s);
+      tab = icon(K, 32) + icon(K, 16);
+      dark = svg(wd.svg, 200, 200 * wd.h / wd.w, wd.w, wd.h);
+    } else {
+      const mk = (c, s) => svg(p.fn(c, "k" + (id++)), s, s);
+      hero = `<div style="display:flex;align-items:center;gap:20px">${mk(K, 150)}${name(K, 54)}</div>`;
+      tab = mk(K, 32) + mk(K, 16);
+      dark = `<div style="display:flex;align-items:center;gap:12px">${mk(L, 46)}${name(L, 26)}</div>`;
+    }
+    return `<section class="piste">
+      <div class="stage">${hero}</div>
+      <div class="info">
+        <div class="num">PISTE ${String(i + 1).padStart(2, "0")}</div>
+        <h2>${p.name}</h2>
+        <p>${p.why}</p>
+        <div class="uses"><div class="tab">${tab} Nexus</div><div class="dark">${dark}</div></div>
+      </div>
+    </section>`;
+  }).join("");
+}
+document.fonts.load('700 40px "Space Grotesk"').then(() => document.fonts.ready).then(() => { render(); window.__ready = true; });
+</script>
+</body>
+</html>
